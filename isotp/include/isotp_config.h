@@ -1,0 +1,28 @@
+#if !defined(ISOTP_CONFIG_H)
+#define ISOTP_CONFIG_H
+
+#ifndef CONFIG_ISOTP_MAX_MSG_LENGTH
+#define CONFIG_ISOTP_MAX_MSG_LENGTH 128
+#endif
+
+#ifndef CONFIG_ISOTP_BS_TIMEOUT
+#define CONFIG_ISOTP_BS_TIMEOUT 100
+#endif
+
+#ifndef CONFIG_ISOTP_CR_TIMEOUT
+#define CONFIG_ISOTP_CR_TIMEOUT 100
+#endif
+
+#ifndef CONFIG_ISOTP_BS
+#define CONFIG_ISOTP_BS 8
+#endif
+
+#ifndef CONFIG_ISOTP_STMIN
+#define CONFIG_ISOTP_STMIN 1
+#endif
+
+#ifndef CONFIG_ISOTP_WFTMAX
+#define CONFIG_ISOTP_WFTMAX 1
+#endif
+
+#endif // ISOTP_CONFIG_H
