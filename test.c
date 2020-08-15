@@ -11,7 +11,7 @@ void raw_can_send(uint32_t can_id, uint8_t *can_data, uint8_t can_dlc)
     printf("\n");
 }
 
-void isotp_rx_cb(uint8_t *data, int len)
+void isotp_rx_cb(uint8_t *data, int len, enum isotp_tatype tatype)
 {
     printf("rx complete\n");
     for (int i = 0; i < len; i++)
@@ -35,15 +35,15 @@ int main(void)
     };
 
     // rx single frame
-    isotp_rcv(&isotp, sim_can_data[0], 8);
+    isotp_rcv(&isotp, sim_can_data[0], 8, ISOTP_TATYPE_PHYSICAL);
     isotp_poll(&isotp);
 
     // rx multi frame
-    isotp_rcv(&isotp, sim_can_data[1], 8);
+    isotp_rcv(&isotp, sim_can_data[1], 8, ISOTP_TATYPE_PHYSICAL);
     isotp_poll(&isotp);
-    isotp_rcv(&isotp, sim_can_data[2], 8);
+    isotp_rcv(&isotp, sim_can_data[2], 8, ISOTP_TATYPE_PHYSICAL);
     isotp_poll(&isotp);
-    isotp_rcv(&isotp, sim_can_data[3], 8);
+    isotp_rcv(&isotp, sim_can_data[3], 8, ISOTP_TATYPE_PHYSICAL);
     isotp_poll(&isotp);
 
     //// tx test
@@ -57,7 +57,7 @@ int main(void)
     uint8_t tx_data_1[] = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10};
     uint8_t sim_fc[] = {0x30, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
     isotp_send(&isotp, tx_data_1, sizeof(tx_data_1));
-    isotp_rcv(&isotp, sim_fc, 8);
+    isotp_rcv(&isotp, sim_fc, 8, ISOTP_TATYPE_PHYSICAL);
     isotp_poll(&isotp);
     isotp_poll(&isotp);
     isotp_poll(&isotp);

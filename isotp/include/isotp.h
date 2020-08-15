@@ -4,6 +4,12 @@
 #include <stdint.h>
 #include "isotp_config.h"
 
+enum isotp_tatype
+{
+    ISOTP_TATYPE_PHYSICAL = 0,
+    ISOTP_TATYPE_FUNCTIONAL,
+};
+
 struct fc_opts
 {
     uint8_t bs;
@@ -20,7 +26,7 @@ struct tpcon
     uint8_t buf[CONFIG_ISOTP_MAX_MSG_LENGTH];
 };
 
-typedef void (*isotp_rx_callback_t)(uint8_t *data, int len);
+typedef void (*isotp_rx_callback_t)(uint8_t *data, int len, enum isotp_tatype tatype);
 typedef void (*isotp_can_tx_func_t)(uint32_t can_id, uint8_t *can_data, uint8_t can_dlc);
 
 struct isotp
@@ -28,6 +34,7 @@ struct isotp
     struct tpcon rx, tx;
     struct fc_opts rxfc, txfc;
     uint8_t tx_wft;
+    enum isotp_tatype tatype;
     uint32_t rxtimer, txtimer;
     uint32_t tx_id;
     isotp_can_tx_func_t tx_func;
@@ -59,8 +66,9 @@ void isotp_send(struct isotp *isotp, uint8_t *data, int len);
  * @param isotp pointer to instance
  * @param can_data the data of can frame
  * @param can_dlc the dlc of can frame
+ * @param tatype target address type
  */
-void isotp_rcv(struct isotp *isotp, uint8_t *can_data, uint8_t can_dlc);
+void isotp_rcv(struct isotp *isotp, uint8_t *can_data, uint8_t can_dlc, enum isotp_tatype tatype);
 
 /**
  * @brief polling function, call this function every 1ms

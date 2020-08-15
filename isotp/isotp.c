@@ -110,7 +110,7 @@ static void isotp_rcv_sf(struct isotp *isotp, uint8_t *can_data, uint8_t can_dlc
         {
             isotp->rx.buf[isotp->rx.idx++] = can_data[i];
         }
-        isotp->rx_cb(isotp->rx.buf, isotp->rx.len);
+        isotp->rx_cb(isotp->rx.buf, isotp->rx.len, isotp->tatype);
     }
 }
 
@@ -169,7 +169,7 @@ static void isotp_rcv_cf(struct isotp *isotp, uint8_t *can_data, uint8_t can_dlc
             }
             else
             {
-                isotp->rx_cb(isotp->rx.buf, isotp->rx.len);
+                isotp->rx_cb(isotp->rx.buf, isotp->rx.len, isotp->tatype);
                 isotp->rx.state = ISOTP_IDLE;
             }
         }
@@ -273,26 +273,35 @@ void isotp_send(struct isotp *isotp, uint8_t *data, int len)
     }
 }
 
-void isotp_rcv(struct isotp *isotp, uint8_t *can_data, uint8_t can_dlc)
+void isotp_rcv(struct isotp *isotp, uint8_t *can_data, uint8_t can_dlc, enum isotp_tatype tatype)
 {
     uint8_t n_pci_type = can_data[0] & 0xF0;
+    /* we support half-duplex communication */
     if ((n_pci_type == N_PCI_FC && isotp->rx.state == ISOTP_IDLE) ||
         (n_pci_type != N_PCI_FC && isotp->tx.state == ISOTP_IDLE))
     {
-        switch (n_pci_type)
+        /**
+         * physical addressing (1 to 1 communication) shall be supported for all types of network layer messages
+         * functional addressing (1 to n communication) shall only be supported for singleframe transmission
+         */
+        if (tatype == ISOTP_TATYPE_PHYSICAL || n_pci_type == N_PCI_SF)
         {
-        case N_PCI_FC:
-            isotp_rcv_fc(isotp, can_data, can_dlc);
-            break;
-        case N_PCI_SF:
-            isotp_rcv_sf(isotp, can_data, can_dlc);
-            break;
-        case N_PCI_FF:
-            isotp_rcv_ff(isotp, can_data, can_dlc);
-            break;
-        case N_PCI_CF:
-            isotp_rcv_cf(isotp, can_data, can_dlc);
-            break;
+            isotp->tatype = tatype;
+            switch (n_pci_type)
+            {
+            case N_PCI_FC:
+                isotp_rcv_fc(isotp, can_data, can_dlc);
+                break;
+            case N_PCI_SF:
+                isotp_rcv_sf(isotp, can_data, can_dlc);
+                break;
+            case N_PCI_FF:
+                isotp_rcv_ff(isotp, can_data, can_dlc);
+                break;
+            case N_PCI_CF:
+                isotp_rcv_cf(isotp, can_data, can_dlc);
+                break;
+            }
         }
     }
 }
@@ -321,14 +330,14 @@ void isotp_poll(struct isotp *isotp)
                 isotp->txtimer--;
                 if (isotp->txtimer == 0)
                 {
-                    /* stmin timeout */
+                    /* STmin timeout */
                     isotp_send_cf(isotp);
                 }
             }
         }
         else
         {
-            /* stmin off */
+            /* STmin off */
             isotp_send_cf(isotp);
         }
         break;
